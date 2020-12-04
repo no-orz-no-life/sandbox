@@ -62,7 +62,7 @@
         var ptr = -1
         function makeStyle(c1, c2) {
             ptr += 1
-            return `span.${prefix}${ptr} { background: linear-gradient(90deg, ${c1}, ${c2}) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; }`
+            return `span.${prefix}${ptr} { background: linear-gradient(90deg, ${c1}, ${c2}) !important; -webkit-background-clip: text !important; color: transparent !important; }`
         }
 
         let element = document.createElement("style")
