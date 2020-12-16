@@ -27,7 +27,7 @@
                 if (!confirmedList.has(name)) { console.log(`*** ${name} not found in confirmedList.`) }
             }
             node.childNodes.forEach((n) => {
-                if (n.nodeType === 1 /* NODE */) { parseAll(current, n, found) }
+                if (n.nodeType === 1 /* NODE */) { parseAll(current, n, processor) }
                 else if (n.nodeType === 3 /* #text */) {
                     if (!isOnlyWhitespaces(n.textContent)) { processor.processText(n) }
                 }
