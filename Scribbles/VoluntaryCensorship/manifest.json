@@ -1,0 +1,18 @@
+{
+    "manifest_version": 2,
+    "name": "VoluntaryCensorship",
+    "version": "1.0",
+  
+    "description": "Voluntary Censorship",
+  
+    "icons": {
+	"48": "icons/icon-48.png"
+    },
+  
+    "content_scripts": [
+	{
+            "matches": ["*://*.twitter.com/*"],
+            "js": ["voluntary-censorship.js"]
+	}
+    ]
+}
