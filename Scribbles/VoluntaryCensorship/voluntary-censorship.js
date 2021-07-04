@@ -1,7 +1,7 @@
 const timeout = 2000
 const useTimer = true
 
-const titles = new Set(["What’s happening", "Topics to follow"])
+const titles = new Set(["What’s happening", "Topics to follow", "You might like", "Who to follow"])
 
 function hideNode(node) {
     node.style.display = "none"
