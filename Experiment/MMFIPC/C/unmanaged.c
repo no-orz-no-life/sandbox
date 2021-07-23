@@ -20,7 +20,6 @@
 #define HEIGHT 1080
 
 typedef struct {
-    int fd;
     const char* name;
     size_t size;
     void* pointer;
@@ -40,32 +39,33 @@ shared_memory response;
 
 char* reqbuf = NULL;
 char* resbuf = NULL;
-parameter_t param;
 
-static void allocate(shared_memory* p, const char* name, void* pointer, size_t size)
+static void allocate(shared_memory* p, const char* name, size_t size)
 {
     p->name = name;
-    p->pointer = pointer;
     p->size = size;
-    p->fd = shm_open(name, O_RDWR|O_CREAT, 0644);
-    if(p->fd == -1) {
+    int fd = shm_open(name, O_RDWR|O_CREAT, 0644);
+    ftruncate(fd, size);
+    if(fd == -1) {
         perror("shm_open");
         exit(1);
     }
-    mmap(p->pointer, size, PROT_READ|PROT_WRITE, MAP_SHARED, p->fd, 0);
+    p->pointer = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    close(fd);
 }
 
 static void deallocate(shared_memory* p)
 {
-    if(p->fd != -1 && p->name != NULL)
+    if(p->pointer != NULL)
     {
         munmap(p->pointer, p->size);
-        close(p->fd);
+        p->pointer = NULL;
+    }
+    if(p->name != NULL)
+    {
         shm_unlink(p->name);
         p->name = NULL;
-        p->fd = -1;
     }
-    p->pointer = NULL;
 }
 
 void cleanup()
@@ -77,26 +77,17 @@ void cleanup()
     deallocate(&parameter);
     deallocate(&request);
     deallocate(&response);
-    if(reqbuf != NULL)
-    {
-        free(reqbuf);
-        reqbuf = NULL;
-    }
-    if(resbuf != NULL)
-    {
-        free(resbuf);
-        resbuf = NULL;
-    }
 }
 
 void client() {
     int fd;
     printf("client\n");
-    fd = shm_open("frei0r.memorymap.parameter", O_RDWR, 0644);
+    fd = shm_open("frei0r.memorymap.parameter", O_RDWR, 0);
     printf("shm_open: %d\n", fd);
 
     void* ptr = mmap(NULL, sizeof(parameter_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     printf("ptr: %p\n", ptr);
+    close(fd);
 
     parameter_t* p = (parameter_t*)ptr;
     printf("%d %d\n", p->width, p->height);
@@ -104,29 +95,30 @@ void client() {
 
 void server() {
     printf("server\n");
-    memset(&param, 0, sizeof(parameter_t));
-    allocate(&parameter, "frei0r.memorymap.parameter", &param, sizeof(parameter_t));
-    param.width = WIDTH;
-    param.height = HEIGHT;
+    allocate(&parameter, "frei0r.memorymap.parameter", sizeof(parameter_t));
+    parameter_t* param = (parameter_t*)parameter.pointer;
+    printf("%p\n", param);
+    param->width = WIDTH;
+    param->height = HEIGHT;
 
     size_t size = WIDTH * HEIGHT * sizeof(uint32_t);
 
-    reqbuf = calloc(size, 1);
-    resbuf = calloc(size, 1);
-    allocate(&request, "frei0r.memorymap.request", reqbuf, size);
-    allocate(&response, "frei0r.memorymap.response", resbuf, size);
+    allocate(&request, "frei0r.memorymap.request", size);
+    allocate(&response, "frei0r.memorymap.response", size);
+    reqbuf = request.pointer;
+    resbuf = response.pointer;
 
-    if(sem_init(&param.sem_ack, 1, 0))
+    if(sem_init(&param->sem_ack, 1, 0))
     {
         perror("sem_init(ack)");
         exit(1);
     }
-    if(sem_init(&param.sem_request, 1, 0))
+    if(sem_init(&param->sem_request, 1, 0))
     {
         perror("sem_init(request)");
         exit(1);
     }
-    if(sem_init(&param.sem_response, 1, 0))
+    if(sem_init(&param->sem_response, 1, 0))
     {
         perror("sem_init(response)");
         exit(1);
@@ -153,13 +145,13 @@ void server() {
             if(strncasecmp(buf, "quit", 4) == 0) break;
             
             strcpy(reqbuf, buf);
-            sem_post(&param.sem_request);
+            sem_post(&param->sem_request);
             struct timespec timeout_ack;
             timespec_get(&timeout_ack, TIME_UTC);
             timeout_ack.tv_sec ++;
 
             printf("wait for ACK....\n");
-            ret = sem_timedwait(&param.sem_ack, &timeout_ack);
+            ret = sem_timedwait(&param->sem_ack, &timeout_ack);
             if(ret == 0)
             {
                 printf("received ACK.\n");
@@ -170,7 +162,7 @@ void server() {
                 {
                     printf("ack timed out.\n");
                     // reset req
-                    sem_trywait(&param.sem_request);
+                    sem_trywait(&param->sem_request);
                 }
                 else
                 {
@@ -179,7 +171,7 @@ void server() {
                 }
             }
         }
-        ret = sem_trywait(&param.sem_response);
+        ret = sem_trywait(&param->sem_response);
         if(ret == 0)
         {
             // response received.

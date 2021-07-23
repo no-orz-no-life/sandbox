@@ -78,10 +78,11 @@ let main argv =
     printfn "%d" (Marshal.SizeOf(typeof<Parameter>))
     printfn "%d" (sizeof<Parameter>)
 
-    let fd0 = shm_open("frei0r.memorymap.parameter", O_RDWR, 0644)
+    let fd0 = shm_open("frei0r.memorymap.parameter", O_RDWR, 0)
     printfn "fd0 = %d" fd0
     let ptr = mmap(0n, Marshal.SizeOf(typeof<Parameter>) |> int64, PROT_READ ||| PROT_WRITE, MAP_SHARED, fd0, 0L)
     printfn "ptr = %A, %A" ptr (ptr = -1n)
+    close(fd0) |> ignore
     let param = Marshal.PtrToStructure<Parameter>(ptr)
     printfn "%d %d" param.width param.height
 
