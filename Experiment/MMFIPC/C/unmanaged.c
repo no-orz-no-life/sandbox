@@ -1,0 +1,210 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#include <sys/select.h>
+#include <sys/time.h>
+#include <sys/types.h>
+
+#include <pthread.h>
+#include <semaphore.h>
+
+#include <errno.h>
+
+#define WIDTH 1920
+#define HEIGHT 1080
+
+typedef struct {
+    int fd;
+    const char* name;
+    size_t size;
+    void* pointer;
+} shared_memory;
+
+typedef struct {
+    unsigned int width;
+    unsigned int height;
+    sem_t sem_request;
+    sem_t sem_ack;
+    sem_t sem_response;
+} parameter_t;
+
+shared_memory parameter;
+shared_memory request;
+shared_memory response;
+
+char* reqbuf = NULL;
+char* resbuf = NULL;
+parameter_t param;
+
+static void allocate(shared_memory* p, const char* name, void* pointer, size_t size)
+{
+    p->name = name;
+    p->pointer = pointer;
+    p->size = size;
+    p->fd = shm_open(name, O_RDWR|O_CREAT, 0644);
+    if(p->fd == -1) {
+        perror("shm_open");
+        exit(1);
+    }
+    mmap(p->pointer, size, PROT_READ|PROT_WRITE, MAP_SHARED, p->fd, 0);
+}
+
+static void deallocate(shared_memory* p)
+{
+    if(p->fd != -1 && p->name != NULL)
+    {
+        munmap(p->pointer, p->size);
+        close(p->fd);
+        shm_unlink(p->name);
+        p->name = NULL;
+        p->fd = -1;
+    }
+    p->pointer = NULL;
+}
+
+void cleanup()
+{
+    parameter_t* param = (parameter_t*)parameter.pointer;
+    sem_destroy(&param->sem_ack);
+    sem_destroy(&param->sem_request);
+    sem_destroy(&param->sem_response);
+    deallocate(&parameter);
+    deallocate(&request);
+    deallocate(&response);
+    if(reqbuf != NULL)
+    {
+        free(reqbuf);
+        reqbuf = NULL;
+    }
+    if(resbuf != NULL)
+    {
+        free(resbuf);
+        resbuf = NULL;
+    }
+}
+
+void client() {
+    int fd;
+    printf("client\n");
+    fd = shm_open("frei0r.memorymap.parameter", O_RDWR, 0644);
+    printf("shm_open: %d\n", fd);
+
+    void* ptr = mmap(NULL, sizeof(parameter_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    printf("ptr: %p\n", ptr);
+
+    parameter_t* p = (parameter_t*)ptr;
+    printf("%d %d\n", p->width, p->height);
+}
+
+void server() {
+    printf("server\n");
+    memset(&param, 0, sizeof(parameter_t));
+    allocate(&parameter, "frei0r.memorymap.parameter", &param, sizeof(parameter_t));
+    param.width = WIDTH;
+    param.height = HEIGHT;
+
+    size_t size = WIDTH * HEIGHT * sizeof(uint32_t);
+
+    reqbuf = calloc(size, 1);
+    resbuf = calloc(size, 1);
+    allocate(&request, "frei0r.memorymap.request", reqbuf, size);
+    allocate(&response, "frei0r.memorymap.response", resbuf, size);
+
+    if(sem_init(&param.sem_ack, 1, 0))
+    {
+        perror("sem_init(ack)");
+        exit(1);
+    }
+    if(sem_init(&param.sem_request, 1, 0))
+    {
+        perror("sem_init(request)");
+        exit(1);
+    }
+    if(sem_init(&param.sem_response, 1, 0))
+    {
+        perror("sem_init(response)");
+        exit(1);
+    }
+    fd_set readfds;
+    struct timeval timeout;
+    char buf[0x100];
+    int ret;
+    while(1)
+    {
+        FD_ZERO(&readfds);
+        FD_SET(0, &readfds);
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 0;
+        int nfds = select(1, &readfds, NULL, NULL, &timeout);
+        if(nfds < 0)
+        {
+            perror("select");
+            break;
+        }
+        if(nfds > 0)
+        {
+            if(fgets(buf, sizeof(buf) - 1, stdin) == NULL) break;
+            if(strncasecmp(buf, "quit", 4) == 0) break;
+            
+            strcpy(reqbuf, buf);
+            sem_post(&param.sem_request);
+            struct timespec timeout_ack;
+            timespec_get(&timeout_ack, TIME_UTC);
+            timeout_ack.tv_sec ++;
+
+            printf("wait for ACK....\n");
+            ret = sem_timedwait(&param.sem_ack, &timeout_ack);
+            if(ret == 0)
+            {
+                printf("received ACK.\n");
+            }
+            else if(ret < 0)
+            {
+                if(errno == ETIMEDOUT)
+                {
+                    printf("ack timed out.\n");
+                    // reset req
+                    sem_trywait(&param.sem_request);
+                }
+                else
+                {
+                    perror("sem_timedwait(ack)");
+                    break;
+                }
+            }
+        }
+        ret = sem_trywait(&param.sem_response);
+        if(ret == 0)
+        {
+            // response received.
+            printf("response: %s\n", resbuf);
+        }
+        else if(errno != EAGAIN)
+        {
+            perror("sem_trywait(response)");
+            break;
+        }
+    }
+}
+int main(int argc, char* argv[])
+{
+    printf("sizeof(void*) = %ld\n", sizeof(void*));
+    printf("sizeof(size_t) = %ld\n", sizeof(size_t));
+    printf("sizeof(off_t) = %ld\n", sizeof(off_t));
+    printf("sizeof(time_t) = %ld\n", sizeof(time_t));
+    printf("sizeof(sem_t) = %ld\n", sizeof(sem_t));
+    printf("sizeof(parameter_t) = %ld\n", sizeof(parameter_t));
+    if(argc > 1) {
+        client();
+    } else {
+        atexit(cleanup);
+        server();
+    }
+    printf("exit.\n");
+}
