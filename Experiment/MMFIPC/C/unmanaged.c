@@ -79,18 +79,56 @@ void cleanup()
     deallocate(&response);
 }
 
-void client() {
+void* get_ptr(const char* name, size_t size)
+{
     int fd;
-    printf("client\n");
-    fd = shm_open("frei0r.memorymap.parameter", O_RDWR, 0);
+    fd = shm_open(name, O_RDWR, 0);
     printf("shm_open: %d\n", fd);
 
-    void* ptr = mmap(NULL, sizeof(parameter_t), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    void* ptr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     printf("ptr: %p\n", ptr);
     close(fd);
+    return ptr;
+}
+void client() {
+    printf("client\n");
 
-    parameter_t* p = (parameter_t*)ptr;
-    printf("%d %d\n", p->width, p->height);
+    parameter_t* param = (parameter_t*)get_ptr("frei0r.memorymap.parameter", sizeof(parameter_t));
+    printf("%d %d\n", param->width, param->height);
+    size_t size = param->width * param->height * sizeof(uint32_t);
+    char* req = get_ptr("frei0r.memorymap.request", size);
+    char* res = get_ptr("frei0r.memorymap.response", size);
+    fd_set readfds;
+    struct timeval timeout;
+    char buf[0x100];
+    int ret;
+    while(1)
+    {
+        FD_ZERO(&readfds);
+        FD_SET(0, &readfds);
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 0;
+        int nfds = select(1, &readfds, NULL, NULL, &timeout);
+        if(nfds < 0)
+        {
+            perror("select");
+            break;
+        }
+        if(nfds > 0)
+        {
+            if(fgets(buf, sizeof(buf) - 1, stdin) == NULL) break;
+            if(strncasecmp(buf, "quit", 4) == 0) break;
+        }
+        ret = sem_trywait(&param->sem_request);
+        if(ret == 0)
+        {
+            printf("received request. sending ACK.\n");
+            sem_post(&param->sem_ack);
+            printf("request: %s\n", req);
+            memmove(res, "abcde\0", 6);
+            sem_post(&param->sem_response);
+        }
+    }
 }
 
 void server() {

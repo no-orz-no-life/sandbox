@@ -47,22 +47,22 @@ type Parameter =
     val mutable sem_response: sem_t
 
 [<DllImport(LibPthread)>]
-extern int sem_destroy(sem_t& sem)
+extern int sem_destroy(nativeint sem)
 
 [<DllImport(LibPthread)>]
-extern int sem_init(sem_t&  sem, int pshared, uint value)
+extern int sem_init(nativeint sem, int pshared, uint value)
 
 [<DllImport(LibPthread)>]
-extern int sem_post(sem_t&  sem)
+extern int sem_post(nativeint sem)
 
 [<DllImport(LibPthread)>]
-extern int sem_wait(sem_t&  sem)
+extern int sem_wait(nativeint sem)
 
 [<DllImport(LibPthread)>]
-extern int sem_trywait(sem_t&  sem)
+extern int sem_trywait(nativeint sem)
 
 [<DllImport(LibPthread)>]
-extern int sem_timedwait(sem_t&  sem, timespec& abs_timeout)
+extern int sem_timedwait(nativeint  sem, timespec& abs_timeout)
 
 [<DllImport(LibC)>]
 extern void perror(string s)
@@ -72,18 +72,41 @@ let PROT_READ = 1
 let PROT_WRITE = 2
 let MAP_SHARED = 1
 
+let getPointer name size =
+    let fd = shm_open(name, O_RDWR, 0)
+    printfn "fd = %d" fd
+    let ptr = mmap(0n, size, PROT_READ|||PROT_WRITE, MAP_SHARED, fd, 0L)
+    close(fd) |> ignore
+    ptr
 [<EntryPoint>]
 let main argv =
     printfn "%d" (Marshal.SizeOf(typeof<sem_t>))
     printfn "%d" (Marshal.SizeOf(typeof<Parameter>))
     printfn "%d" (sizeof<Parameter>)
 
-    let fd0 = shm_open("frei0r.memorymap.parameter", O_RDWR, 0)
-    printfn "fd0 = %d" fd0
-    let ptr = mmap(0n, Marshal.SizeOf(typeof<Parameter>) |> int64, PROT_READ ||| PROT_WRITE, MAP_SHARED, fd0, 0L)
-    printfn "ptr = %A, %A" ptr (ptr = -1n)
-    close(fd0) |> ignore
-    let param = Marshal.PtrToStructure<Parameter>(ptr)
+    let pParam = getPointer "frei0r.memorymap.parameter" ( (Marshal.SizeOf(typeof<Parameter>)) |> int64 )
+    let param = Marshal.PtrToStructure<Parameter>(pParam)
     printfn "%d %d" param.width param.height
+    let size = ((int param.width) * (int param.height) * sizeof<int>) |> int64
 
+    let pReq = getPointer "frei0r.memorymap.request" size
+    let pRes = getPointer "frei0r.memorymap.response" size
+
+    let semRequest = pParam + Marshal.OffsetOf(typeof<Parameter>, "sem_request")
+    let semAck = pParam + Marshal.OffsetOf(typeof<Parameter>, "sem_ack")
+    let semResponse = pParam + Marshal.OffsetOf(typeof<Parameter>, "sem_response")
+
+    let message = System.Text.Encoding.ASCII.GetBytes("ABCDE\x00")
+    while true do
+        match sem_trywait(semRequest) with
+        | 0 ->
+            printfn "request received. sending ACK."
+            sem_post(semAck) |> ignore
+
+            Marshal.PtrToStringAnsi(pReq) |> printfn "request: %A"
+            Marshal.Copy(message, 0, pRes, 6)
+            printfn "sending response.."
+            sem_post(semResponse) |> ignore
+        | n ->
+            ()
     0 // return an integer exit code
