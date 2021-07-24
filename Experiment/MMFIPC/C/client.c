@@ -30,6 +30,8 @@ void client() {
     char message[8192];
     int ret;
     parameter_t* pParam;
+    sem_t* sem_response;
+    sem_t* sem_ack;
     while(1)
     {
         FD_ZERO(&readfds);
@@ -56,18 +58,18 @@ void client() {
 
         if(req == NULL & res == NULL)
         {
-            printf("%d %d\n", pParam->width, pParam->height);
-            size_t size = pParam->width * pParam->height * sizeof(uint32_t);
-            req = get_ptr(pParam->shm_name_req, size);
-            res = get_ptr(pParam->shm_name_res, size);
-            printf("sem_ack: \n"); hexdump(&pParam->sem_ack, 0, sizeof(sem_t));
-            printf("\nsem_response: \n"); hexdump(&pParam->sem_response, 0, sizeof(sem_t));
-            printf("\n");
+            shared_t* shared = get_ptr(pParam->shm_name, pParam->size);
+            printf("%d %d\n", shared->width, shared->height);
+            size_t size = shared->width * shared->height * sizeof(uint32_t);
+            req = shared->pointer;
+            res = req + size;
+            sem_ack = &shared->sem_ack;
+            sem_response = &shared->sem_response;
         }
         printf("received request. sending ACK.\n");
-        sem_post(&pParam->sem_ack);
+        sem_post(sem_ack);
         printf("request: %s\n", req);
         memmove(res, "abcde\0", 6);
-        sem_post(&pParam->sem_response);
+        sem_post(sem_response);
     }
 }

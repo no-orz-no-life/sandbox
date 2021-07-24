@@ -20,15 +20,21 @@
 #include <errno.h>
 
 #define QUEUE_NAME "/frei0r.memorymap.mq"
+#define SHAREDMEMORY_NAME "/frei0r.memorymap.shmem"
+
 extern void hexdump(void* p, int offset, int size);
 
 typedef struct {
     unsigned int width;
     unsigned int height;
-    char shm_name_req[256];
-    char shm_name_res[256];
     sem_t sem_ack;
     sem_t sem_response;
+    char pointer[0];
+} shared_t;
+
+typedef struct {
+    size_t size;
+    char shm_name[256];
 } parameter_t;
 
 #endif

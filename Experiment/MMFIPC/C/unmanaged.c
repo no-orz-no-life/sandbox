@@ -4,58 +4,23 @@
 
 static mqd_t queue = -1;
 
-typedef struct {
-    const char* name;
-    size_t size;
-    void* pointer;
-} shared_memory;
-
-static parameter_t param;
-
-static shared_memory request;
-static shared_memory response;
-
-static char* reqbuf = NULL;
-static char* resbuf = NULL;
-
-static void allocate(shared_memory* p, const char* name, size_t size)
-{
-    p->name = name;
-    p->size = size;
-    int fd = shm_open(name, O_RDWR|O_CREAT, 0644);
-    ftruncate(fd, size);
-    if(fd == -1) {
-        perror("shm_open");
-        exit(1);
-    }
-    p->pointer = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-    close(fd);
-}
-
-static void deallocate(shared_memory* p)
-{
-    if(p->pointer != NULL)
-    {
-        munmap(p->pointer, p->size);
-        p->pointer = NULL;
-    }
-    if(p->name != NULL)
-    {
-        shm_unlink(p->name);
-        p->name = NULL;
-    }
-}
+static shared_t* share = NULL;
+static int share_size;
 
 static void cleanup()
 {
-    sem_destroy(&param.sem_ack);
-    sem_destroy(&param.sem_response);
-    deallocate(&request);
-    deallocate(&response);
     if(queue == -1)
     {
         mq_close(queue);
         mq_unlink(QUEUE_NAME);
+    }
+    if(share != NULL)
+    {
+        sem_destroy(&share->sem_ack);
+        sem_destroy(&share->sem_response);
+        munmap(share, share_size);
+        share = NULL;
+        shm_unlink(SHAREDMEMORY_NAME);
     }
 }
 
@@ -74,15 +39,23 @@ void hexdump(void* p, int offset, int size)
 
 static void server() {
     printf("server\n");
-    param.width = WIDTH;
-    param.height = HEIGHT;
-
+    
     size_t size = WIDTH * HEIGHT * sizeof(uint32_t);
+    share_size = sizeof(shared_t) + size * 2;
 
-    allocate(&request, "frei0r.memorymap.request", size);
-    allocate(&response, "frei0r.memorymap.response", size);
-    reqbuf = request.pointer;
-    resbuf = response.pointer;
+    int fd = shm_open(SHAREDMEMORY_NAME, O_RDWR|O_CREAT, 0644);
+    ftruncate(fd, share_size);
+    if(fd == -1) {
+        perror("shm_open");
+        exit(1);
+    }
+    share = mmap(NULL, share_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
+    close(fd);
+
+    share->width = WIDTH;
+    share->height = HEIGHT;
+    char* reqbuf = share->pointer;
+    char* resbuf = share->pointer + size;
 
     queue = mq_open(QUEUE_NAME, O_RDWR|O_CREAT, 0600, NULL);
     if(queue == -1)
@@ -90,20 +63,16 @@ static void server() {
         perror("mq_open");
         exit(1);
     }
-    if(sem_init(&param.sem_ack, 1, 0))
+    if(sem_init(&share->sem_ack, 1, 0))
     {
         perror("sem_init(ack)");
         exit(1);
     }
-    if(sem_init(&param.sem_response, 1, 0))
+    if(sem_init(&share->sem_response, 1, 0))
     {
         perror("sem_init(response)");
         exit(1);
     }
-
-    printf("sem_ack: \n"); hexdump(&param.sem_ack, 0, sizeof(sem_t));
-    printf("\nsem_response: \n"); hexdump(&param.sem_response, 0, sizeof(sem_t));
-    printf("\n");
 
     fd_set readfds;
     struct timeval timeout;
@@ -127,8 +96,9 @@ static void server() {
             if(strncasecmp(buf, "quit", 4) == 0) break;
             
             strcpy(reqbuf, buf);
-            strcpy(param.shm_name_req, "frei0r.memorymap.request");
-            strcpy(param.shm_name_res, "frei0r.memorymap.response");
+            parameter_t param;
+            strcpy(param.shm_name, SHAREDMEMORY_NAME);
+            param.size = share_size;
 
             mq_send(queue, (char*)&param, sizeof(parameter_t), 0);
 
@@ -137,7 +107,7 @@ static void server() {
             timeout_ack.tv_sec ++;
 
             printf("wait for ACK....\n");
-            ret = sem_timedwait(&param.sem_ack, &timeout_ack);
+            ret = sem_timedwait(&share->sem_ack, &timeout_ack);
             if(ret == 0)
             {
                 printf("received ACK.\n");
@@ -155,7 +125,7 @@ static void server() {
                 }
             }
         }
-        ret = sem_trywait(&param.sem_response);
+        ret = sem_trywait(&share->sem_response);
         if(ret == 0)
         {
             // response received.
