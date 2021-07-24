@@ -1,10 +1,10 @@
 all: unmanaged
 
-unmanaged: unmanaged.o
-	$(CC) -o unmanaged unmanaged.o -lpthread -lrt 
+unmanaged: unmanaged.o client.o
+	$(CC) -o unmanaged unmanaged.o client.o -lpthread -lrt 
 
 clean:
-	rm -f unmanaged unmanaged.o
+	rm -f unmanaged unmanaged.o client.o
 
 .c.o:
 	$(CC) -c $<
