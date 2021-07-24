@@ -149,6 +149,7 @@ int main(int argc, char* argv[])
     printf("sizeof(time_t) = %ld\n", sizeof(time_t));
     printf("sizeof(sem_t) = %ld\n", sizeof(sem_t));
     printf("sizeof(parameter_t) = %ld\n", sizeof(parameter_t));
+    printf("sizeof(ssize_t) = %ld\n", sizeof(ssize_t));
     if(argc > 1) {
         client();
     } else {

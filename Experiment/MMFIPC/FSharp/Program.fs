@@ -67,6 +67,22 @@ extern int sem_timedwait(nativeint  sem, timespec& abs_timeout)
 [<DllImport(LibC)>]
 extern void perror(string s)
 
+type mqd_t = int
+type ssize_t = int64
+
+[<DllImport(LibRt)>]
+extern mqd_t mq_open(string name, int oflag)
+
+[<DllImport(LibRt)>]
+extern ssize_t mq_receive(mqd_t mqdes, nativeint msg_ptr, size_t msg_len, nativeint msg_prio)
+
+[<DllImport(LibRt)>]
+extern ssize_t mq_timedreceivessize_t(mqd_t mqdes, nativeint msg_ptr, size_t msg_len, nativeint msg_prio, timespec& abs_timeout)
+
+
+[<DllImport(LibRt)>]
+extern int mq_close(mqd_t mqdes)
+
 let O_RDWR = 2
 let PROT_READ = 1
 let PROT_WRITE = 2
