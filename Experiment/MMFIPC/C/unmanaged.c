@@ -46,11 +46,11 @@ static void server() {
     share_size = sizeof(shared_t) + size * 2;
 
     int fd = shm_open(SHAREDMEMORY_NAME, O_RDWR|O_CREAT, 0644);
-    ftruncate(fd, share_size);
     if(fd == -1) {
         perror("shm_open");
         exit(1);
     }
+    ftruncate(fd, share_size);
     share = mmap(NULL, share_size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
     close(fd);
 
