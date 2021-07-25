@@ -68,16 +68,21 @@ extern mqd_t mq_open(string name, int oflag)
 extern ssize_t mq_receive(mqd_t mqdes, nativeint msg_ptr, size_t msg_len, nativeint msg_prio)
 
 [<DllImport(LibRt)>]
-extern ssize_t mq_timedreceivessize_t(mqd_t mqdes, nativeint msg_ptr, size_t msg_len, nativeint msg_prio, timespec& abs_timeout)
-
+extern ssize_t mq_timedreceive(mqd_t mqdes, nativeint msg_ptr, size_t msg_len, nativeint msg_prio, timespec& abs_timeout)
 
 [<DllImport(LibRt)>]
 extern int mq_close(mqd_t mqdes)
+
+[<DllImport(LibC)>]
+extern int timespec_get (timespec& ts, int baseTz)
 
 let O_RDWR = 2
 let PROT_READ = 1
 let PROT_WRITE = 2
 let MAP_SHARED = 1
+
+let TIME_UTC = 1
+
 
 let queueName = "/frei0r.memorymap.mq"
 
@@ -119,14 +124,38 @@ let main argv =
             shmems.Add(name, ptr)
             ptr          
 
+    let inline timespecToMsec (ts:timespec) = 
+        ts.tv_sec * 1000L + ts.tv_nsec / (1000L * 1000L)
+    let inline timespecDiffMsec (tFrom:timespec) (tTo:timespec) =
+        (timespecToMsec tTo) - (timespecToMsec tFrom)
+    let inline msecToTimespec msec = 
+        let mutable ts:timespec = Unchecked.defaultof<timespec>
+        ts.tv_sec <- msec / 1000L
+        ts.tv_nsec <- (msec % 1000L) * (1000L * 1000L) 
+        ts
+    let getTimeout lastReceived = 
+        let mutable now:timespec = Unchecked.defaultof<timespec>
+        timespec_get(&now, TIME_UTC) |> ignore
+        if timespecDiffMsec lastReceived now > 1000L then
+            (timespecToMsec now) + 100L
+        else
+            0L
+        |> msecToTimespec
+
     let offsetShmName = Marshal.OffsetOf(typeof<QueueItem>, "shmName")
     let offsetPointer = Marshal.OffsetOf(typeof<SHMItem>, "pointer")
     let offsetSemAck = Marshal.OffsetOf(typeof<SHMItem>, "semAck")
     let offsetSemResponse = Marshal.OffsetOf(typeof<SHMItem>, "semResponse")
     let message = System.Text.Encoding.ASCII.GetBytes("ABCDE\x00")
+    let mutable lastReceived:timespec = Unchecked.defaultof<timespec>
     while true do
-        match mq_receive(queue, buf, bufSize, 0n) with
+        let mutable timeout = getTimeout lastReceived
+        match mq_timedreceive(queue, buf, bufSize, 0n, &timeout) with
         | n when n > 0L ->
+            let mutable now:timespec = Unchecked.defaultof<timespec>
+            timespec_get(&now, TIME_UTC) |> ignore
+            lastReceived <- now
+
             printfn "request received. sending ACK."
             let queueItem = Marshal.PtrToStructure<QueueItem>(buf)
             let shmName = Marshal.PtrToStringAnsi(buf + offsetShmName)
@@ -146,7 +175,7 @@ let main argv =
             Marshal.PtrToStringAnsi(pReq) |> printfn "request: %A"
             Marshal.Copy(message, 0, pRes, 6)
             printfn "sending response.."
-            sem_post(semResponse) |> ignore
+            sem_post(semResponse) |> ignore            
         | 0L ->
             ()
         | n ->
