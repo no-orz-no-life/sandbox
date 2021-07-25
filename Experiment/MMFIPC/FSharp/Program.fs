@@ -37,15 +37,6 @@ type timespec =
 type sem_t =
     [<MarshalAs(UnmanagedType.ByValArray, SizeConst=32)>] val mutable opaque: byte array
 
-[<Struct>]
-[<StructLayout(LayoutKind.Sequential)>]
-type Parameter = 
-    val mutable width: uint
-    val mutable height: uint
-    val mutable sem_request: sem_t
-    val mutable sem_ack: sem_t
-    val mutable sem_response: sem_t
-
 [<DllImport(LibPthread)>]
 extern int sem_destroy(nativeint sem)
 
@@ -88,41 +79,67 @@ let PROT_READ = 1
 let PROT_WRITE = 2
 let MAP_SHARED = 1
 
-let getPointer name size =
-    let fd = shm_open(name, O_RDWR, 0)
-    printfn "fd = %d" fd
-    let ptr = mmap(0n, size, PROT_READ|||PROT_WRITE, MAP_SHARED, fd, 0L)
-    close(fd) |> ignore
-    ptr
+let queueName = "/frei0r.memorymap.mq"
+
+[<Struct>]
+[<StructLayout(LayoutKind.Sequential)>]
+type SHMItem = 
+    val mutable width: uint
+    val mutable height: uint
+    val mutable semAck: sem_t
+    val mutable semResponse: sem_t
+    val mutable pointer: nativeint
+
+[<Struct>]
+[<StructLayout(LayoutKind.Sequential)>]
+type QueueItem =
+    val mutable size: size_t
+    [<MarshalAs(UnmanagedType.ByValArray, SizeConst=32)>]
+    val mutable shmName: byte array
+
 [<EntryPoint>]
 let main argv =
-    printfn "%d" (Marshal.SizeOf(typeof<sem_t>))
-    printfn "%d" (Marshal.SizeOf(typeof<Parameter>))
-    printfn "%d" (sizeof<Parameter>)
 
-    let pParam = getPointer "frei0r.memorymap.parameter" ( (Marshal.SizeOf(typeof<Parameter>)) |> int64 )
-    let param = Marshal.PtrToStructure<Parameter>(pParam)
-    printfn "%d %d" param.width param.height
-    let size = ((int param.width) * (int param.height) * sizeof<int>) |> int64
+    let getPointer name size =
+        let fd = shm_open(name, O_RDWR, 0)
+        printfn "fd = %d" fd
+        let ptr = mmap(0n, size, PROT_READ|||PROT_WRITE, MAP_SHARED, fd, 0L)
+        close(fd) |> ignore
+        ptr
 
-    let pReq = getPointer "frei0r.memorymap.request" size
-    let pRes = getPointer "frei0r.memorymap.response" size
+    let queue = mq_open(queueName, O_RDWR)
+    printfn "queue: %A" queue
 
-    let semRequest = pParam + Marshal.OffsetOf(typeof<Parameter>, "sem_request")
-    let semAck = pParam + Marshal.OffsetOf(typeof<Parameter>, "sem_ack")
-    let semResponse = pParam + Marshal.OffsetOf(typeof<Parameter>, "sem_response")
+    let bufSize = 8192L
+    let buf = Marshal.AllocHGlobal(int bufSize)
 
     let message = System.Text.Encoding.ASCII.GetBytes("ABCDE\x00")
     while true do
-        match sem_trywait(semRequest) with
-        | 0 ->
+        match mq_receive(queue, buf, bufSize, 0n) with
+        | n when n > 0L ->
             printfn "request received. sending ACK."
+            let queueItem = Marshal.PtrToStructure<QueueItem>(buf)
+            let shmName = Marshal.PtrToStringAnsi(buf + Marshal.OffsetOf(typeof<QueueItem>, "shmName"))
+
+            let ptr = getPointer shmName (queueItem.size)
+            let parameter = Marshal.PtrToStructure<SHMItem>(ptr)
+            printfn "%A %A" parameter.width parameter.height
+            let size = (nativeint parameter.width) * (nativeint parameter.height) * (nativeint sizeof<int64>)
+            let pReq = ptr + Marshal.OffsetOf(typeof<SHMItem>, "pointer")
+            let pRes = pReq + size
+
+            let semAck = ptr + Marshal.OffsetOf(typeof<SHMItem>, "semAck")
+            let semResponse = ptr + Marshal.OffsetOf(typeof<SHMItem>, "semResponse")
+
             sem_post(semAck) |> ignore
 
             Marshal.PtrToStringAnsi(pReq) |> printfn "request: %A"
             Marshal.Copy(message, 0, pRes, 6)
             printfn "sending response.."
             sem_post(semResponse) |> ignore
+            munmap(ptr, queueItem.size) |> ignore
+        | 0L ->
+            ()
         | n ->
             ()
     0 // return an integer exit code
