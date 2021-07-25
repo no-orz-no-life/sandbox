@@ -1,4 +1,4 @@
-open System
+open System.Collections.Generic
 open System.Runtime.InteropServices
 
 [<Literal>]
@@ -100,36 +100,46 @@ type QueueItem =
 [<EntryPoint>]
 let main argv =
 
-    let getPointer name size =
-        let fd = shm_open(name, O_RDWR, 0)
-        printfn "fd = %d" fd
-        let ptr = mmap(0n, size, PROT_READ|||PROT_WRITE, MAP_SHARED, fd, 0L)
-        close(fd) |> ignore
-        ptr
-
     let queue = mq_open(queueName, O_RDWR)
     printfn "queue: %A" queue
 
     let bufSize = 8192L
     let buf = Marshal.AllocHGlobal(int bufSize)
 
+    let shmems = Dictionary<string, nativeint>()
+    let getPointer name size = 
+        match shmems.TryGetValue(name) with 
+        | (true, v) ->
+            v
+        | (false, _) ->
+            let fd = shm_open(name, O_RDWR, 0)
+            printfn "fd = %d" fd
+            let ptr = mmap(0n, size, PROT_READ|||PROT_WRITE, MAP_SHARED, fd, 0L)
+            close(fd) |> ignore
+            shmems.Add(name, ptr)
+            ptr          
+
+    let offsetShmName = Marshal.OffsetOf(typeof<QueueItem>, "shmName")
+    let offsetPointer = Marshal.OffsetOf(typeof<SHMItem>, "pointer")
+    let offsetSemAck = Marshal.OffsetOf(typeof<SHMItem>, "semAck")
+    let offsetSemResponse = Marshal.OffsetOf(typeof<SHMItem>, "semResponse")
     let message = System.Text.Encoding.ASCII.GetBytes("ABCDE\x00")
     while true do
         match mq_receive(queue, buf, bufSize, 0n) with
         | n when n > 0L ->
             printfn "request received. sending ACK."
             let queueItem = Marshal.PtrToStructure<QueueItem>(buf)
-            let shmName = Marshal.PtrToStringAnsi(buf + Marshal.OffsetOf(typeof<QueueItem>, "shmName"))
+            let shmName = Marshal.PtrToStringAnsi(buf + offsetShmName)
 
             let ptr = getPointer shmName (queueItem.size)
             let parameter = Marshal.PtrToStructure<SHMItem>(ptr)
             printfn "%A %A" parameter.width parameter.height
-            let size = (nativeint parameter.width) * (nativeint parameter.height) * (nativeint sizeof<int64>)
-            let pReq = ptr + Marshal.OffsetOf(typeof<SHMItem>, "pointer")
+            let size = (nativeint parameter.width) * (nativeint parameter.height) * (nativeint sizeof<int32>)
+            let pReq = ptr + offsetPointer
             let pRes = pReq + size
 
-            let semAck = ptr + Marshal.OffsetOf(typeof<SHMItem>, "semAck")
-            let semResponse = ptr + Marshal.OffsetOf(typeof<SHMItem>, "semResponse")
+            let semAck = ptr + offsetSemAck
+            let semResponse = ptr + offsetSemResponse
 
             sem_post(semAck) |> ignore
 
@@ -137,7 +147,6 @@ let main argv =
             Marshal.Copy(message, 0, pRes, 6)
             printfn "sending response.."
             sem_post(semResponse) |> ignore
-            munmap(ptr, queueItem.size) |> ignore
         | 0L ->
             ()
         | n ->
