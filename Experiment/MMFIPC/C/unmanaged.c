@@ -7,6 +7,8 @@ static mqd_t queue = -1;
 static shared_t* share = NULL;
 static int share_size;
 
+#include <uuid/uuid.h>
+
 static void cleanup()
 {
     if(queue == -1)
@@ -150,6 +152,12 @@ int main(int argc, char* argv[])
     printf("sizeof(sem_t) = %ld\n", sizeof(sem_t));
     printf("sizeof(parameter_t) = %ld\n", sizeof(parameter_t));
     printf("sizeof(ssize_t) = %ld\n", sizeof(ssize_t));
+
+    uuid_t uuid;
+    uuid_generate(uuid);
+    char buf[64];
+    uuid_unparse(uuid, buf);
+    printf("UUID: %s\n", buf);
     if(argc > 1) {
         client();
     } else {
