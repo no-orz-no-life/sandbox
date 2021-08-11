@@ -43,15 +43,18 @@ let main argv =
         .SetStrokeColor(black)
         .SetFontAndSize(pdfFont, 20.0f)
         .SetFillColor(black)
-        .MoveTo(30.0, headY)
+        .BeginText()
+        .SetTextMatrix(30.0f, float32 headY)
         .ShowText("Lifetime Map")
+        .EndText()
+        .BeginText()
         .SetFontAndSize(pdfFont, 6.0f)
-        .MoveTo((page.GetPageSize().GetWidth() |> double) - 100.0, headY)
-        .ShowText("revision 20210728") |> ignore
+        .SetTextMatrix(page.GetPageSize().GetWidth() - 100.0f, float32 headY)
+        .ShowText("revision 20210730")
+        .EndText() |> ignore
     pdfCanvas
         .SetStrokeColor(black)
         .SetFontAndSize(pdfFont, 2.0f)
-        .SetFillColor(darkGray)
         |> ignore
 
     let drawRectPath x y =
@@ -73,6 +76,7 @@ let main argv =
 
         if d < today then
             (drawRectPath baseX baseY)
+                .SetFillColor(darkGray)
                 .FillStroke() |> ignore
 
         if x = 0 then
@@ -85,8 +89,11 @@ let main argv =
             None
         |> Option.iter (fun (posX, posY) -> 
             pdfCanvas
-                .MoveTo(posX, posY)
-                .ShowText(sprintf "%d/%d" d.Year d.Month) |> ignore
+                .SetFillColor(black)
+                .BeginText()
+                .SetTextMatrix(float32 posX, float32 posY)
+                .ShowText(sprintf "%d/%d" d.Year d.Month)
+                .EndText() |> ignore
             )
 
         x <- x + 1
