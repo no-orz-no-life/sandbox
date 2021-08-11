@@ -24,37 +24,48 @@ let main argv =
     let page = pdfDocument.AddNewPage(PageSize.A3)
     let pdfCanvas = PdfCanvas(page)
 
+    // Font size
+    let titleSize = 20.0f
+    let revisionSize = 6.0f
+    let labelSize = 5.0f
+
+    // Colors
     let black = DeviceCmyk(0.0f, 0f, 0f, 1.0f)
     let darkGray = DeviceCmyk(0f, 0f, 0f, 0.7f)
     let lightGray = DeviceCmyk(0f, 0f, 0f, 0.4f)
     let white = DeviceCmyk(0.0f, 0.0f, 0.0f, 0.0f)
 
+    // Layout
     let leftMargin = 40.0f
     let rightMargin = 40.0f
     let topMargin = 60.0f
-    let gap = 4.0f
-    let columns = 68
+    let gap = labelSize + 2.0f
+    let columns = 58
+
     let gridSize = (page.GetPageSize().GetWidth() - (leftMargin + rightMargin) - gap * (float32  (columns - 1))) / (float32 columns)
 
     let pdfFont = PdfFontFactory.CreateFont(StandardFonts.TIMES_ROMAN)
 
-    let headY = (page.GetPageSize().GetHeight() |> double)- 40.0
+    // Position
+    let headerY = (page.GetPageSize().GetHeight() |> double)- 40.0
+    let headerX = 30.0f
+
     pdfCanvas
         .SetStrokeColor(black)
-        .SetFontAndSize(pdfFont, 20.0f)
+        .SetFontAndSize(pdfFont, titleSize)
         .SetFillColor(black)
         .BeginText()
-        .SetTextMatrix(30.0f, float32 headY)
+        .SetTextMatrix(headerX, float32 headerY)
         .ShowText("Lifetime Map")
         .EndText()
         .BeginText()
-        .SetFontAndSize(pdfFont, 6.0f)
-        .SetTextMatrix(page.GetPageSize().GetWidth() - 100.0f, float32 headY)
-        .ShowText("revision 20210730")
+        .SetFontAndSize(pdfFont, revisionSize)
+        .SetTextMatrix(page.GetPageSize().GetWidth() - 100.0f, float32 headerY)
+        .ShowText("revision 20210812")
         .EndText() |> ignore
     pdfCanvas
         .SetStrokeColor(black)
-        .SetFontAndSize(pdfFont, 2.0f)
+        .SetFontAndSize(pdfFont, labelSize)
         |> ignore
 
     let drawRectPath x y =
@@ -79,12 +90,16 @@ let main argv =
                 .SetFillColor(darkGray)
                 .FillStroke() |> ignore
 
+        let jitter = 1.0
+        let textToWrite = sprintf "%d/%d" d.Year d.Month
+        let labelBaseLineY = baseY + (double gridSize) / 2.0 - (double labelSize) / 2.0
+        let textWidth = pdfFont.GetWidth(textToWrite, labelSize) |> double
         if x = 0 then
-            (30.0, baseY + (double gridSize) / 2.0) |> Some
+            (baseX - textWidth - jitter, labelBaseLineY) |> Some
         elif x = columns - 1 then
-            ((page.GetPageSize().GetWidth() |> double) - 35.0, baseY + (double gridSize) / 2.0) |> Some
+            (baseX + (double gridSize) + jitter, labelBaseLineY) |> Some
         elif d.Month <> lastMonth.Month then
-            (baseX, baseY  - 2.4) |> Some
+            (baseX, baseY - (double labelSize))  |> Some
         else
             None
         |> Option.iter (fun (posX, posY) -> 
@@ -92,7 +107,7 @@ let main argv =
                 .SetFillColor(black)
                 .BeginText()
                 .SetTextMatrix(float32 posX, float32 posY)
-                .ShowText(sprintf "%d/%d" d.Year d.Month)
+                .ShowText(textToWrite)
                 .EndText() |> ignore
             )
 
