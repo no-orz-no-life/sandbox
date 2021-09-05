@@ -1,0 +1,422 @@
+<?xml version="1.0" standalone="no"?>
+<mlt LC_NUMERIC="C" version="6.24.0" title="Shotcut version 21.01.31" producer="main_bin">
+  <profile description="automatic" width="1920" height="1080" progressive="1" sample_aspect_num="1" sample_aspect_den="1" display_aspect_num="1920" display_aspect_den="1080" frame_rate_num="30" frame_rate_den="1" colorspace="709"/>
+  <producer id="producer0" in="00:00:00.000" out="00:00:21.733">
+    <property name="length">00:00:21.767</property>
+    <property name="eof">pause</property>
+    <property name="resource">/home/zinnia/2021-06-05 13-34-14-Level4-CBR-4Mps.mkv</property>
+    <property name="audio_index">1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2021-06-05T04:34:36</property>
+    <property name="shotcut:hash">20b35d9eef49e1f53834934378f5101d</property>
+    <property name="ignore_points">0</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+  </producer>
+  <producer id="producer1" in="00:00:10.833" out="00:00:17.133">
+    <property name="length">00:00:22.733</property>
+    <property name="eof">pause</property>
+    <property name="resource">/home/zinnia/2021-06-05 13-35-52-Level4-CQP-QP20.mkv</property>
+    <property name="audio_index">1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2021-06-05T04:36:15</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+    <property name="shotcut:hash">9d5d232212af39ea1026901df25d1d09</property>
+    <property name="ignore_points">1</property>
+    <property name="shotcut:caption">2021-06-05 13-35-52-Level4-CQP-QP20.mkv</property>
+  </producer>
+  <producer id="producer2" in="00:00:10.533" out="00:00:17.300">
+    <property name="length">00:00:22.733</property>
+    <property name="eof">pause</property>
+    <property name="resource">/home/zinnia/2021-06-05 13-35-52-Level4-CQP-QP20.mkv</property>
+    <property name="audio_index">1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2021-06-05T04:36:15</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+    <property name="shotcut:hash">9d5d232212af39ea1026901df25d1d09</property>
+    <property name="ignore_points">1</property>
+    <property name="shotcut:caption">2021-06-05 13-35-52-Level4-CQP-QP20.mkv</property>
+  </producer>
+  <playlist id="main_bin" title="Shotcut version 21.01.31">
+    <property name="shotcut:projectAudioChannels">2</property>
+    <property name="shotcut:projectFolder">0</property>
+    <property name="xml_retain">1</property>
+    <entry producer="producer0" in="00:00:00.000" out="00:00:21.733"/>
+    <entry producer="producer1" in="00:00:10.833" out="00:00:17.133"/>
+    <entry producer="producer2" in="00:00:10.533" out="00:00:17.300"/>
+  </playlist>
+  <producer id="black" in="00:00:00.000" out="00:00:20.300">
+    <property name="length">00:00:20.333</property>
+    <property name="eof">pause</property>
+    <property name="resource">0</property>
+    <property name="aspect_ratio">1</property>
+    <property name="mlt_service">color</property>
+    <property name="mlt_image_format">rgb24a</property>
+    <property name="set.test_audio">0</property>
+  </producer>
+  <playlist id="background">
+    <entry producer="black" in="00:00:00.000" out="00:00:20.300"/>
+  </playlist>
+  <producer id="producer3" in="00:00:00.000" out="00:00:21.733">
+    <property name="length">00:00:21.767</property>
+    <property name="eof">pause</property>
+    <property name="resource">/home/zinnia/2021-06-05 13-34-14-Level4-CBR-4Mps.mkv</property>
+    <property name="audio_index">1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2021-06-05T04:34:36</property>
+    <property name="shotcut:hash">20b35d9eef49e1f53834934378f5101d</property>
+    <property name="ignore_points">0</property>
+    <property name="global_feed">1</property>
+    <property name="shotcut:caption">2021-06-05 13-34-14-Level4-CBR-4Mps.mkv</property>
+    <property name="xml">was here</property>
+    <filter id="filter0" in="00:00:08.567" out="00:00:15.733">
+      <property name="start">1</property>
+      <property name="level">00:00:00.000=0;00:00:00.367=1</property>
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">1</property>
+      <property name="shotcut:animIn">00:00:00.400</property>
+    </filter>
+    <filter id="filter1" in="00:00:08.567" out="00:00:15.733">
+      <property name="window">75</property>
+      <property name="max_gain">20dB</property>
+      <property name="level">00:00:00.000=-60;00:00:00.367=0</property>
+      <property name="mlt_service">volume</property>
+      <property name="shotcut:filter">fadeInVolume</property>
+      <property name="shotcut:animIn">12</property>
+    </filter>
+    <filter id="filter2" in="00:00:08.567" out="00:00:15.733">
+      <property name="start">1</property>
+      <property name="level">00:00:06.567=1;00:00:07.167=0</property>
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeOutBrightness</property>
+      <property name="alpha">1</property>
+      <property name="shotcut:animOut">19</property>
+    </filter>
+    <filter id="filter3" in="00:00:08.567" out="00:00:15.733">
+      <property name="window">75</property>
+      <property name="max_gain">20dB</property>
+      <property name="level">00:00:06.567=0;00:00:07.167=-60</property>
+      <property name="mlt_service">volume</property>
+      <property name="shotcut:filter">fadeOutVolume</property>
+      <property name="shotcut:animOut">19</property>
+    </filter>
+  </producer>
+  <producer id="producer4" in="00:00:00.000" out="00:00:22.700">
+    <property name="length">00:00:22.733</property>
+    <property name="eof">pause</property>
+    <property name="resource">/home/zinnia/2021-06-05 13-35-52-Level4-CQP-QP20.mkv</property>
+    <property name="audio_index">1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2021-06-05T04:36:15</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+    <property name="shotcut:hash">9d5d232212af39ea1026901df25d1d09</property>
+    <property name="ignore_points">0</property>
+    <property name="shotcut:caption">2021-06-05 13-35-52-Level4-CQP-QP20.mkv</property>
+    <filter id="filter4" in="00:00:10.833" out="00:00:17.133">
+      <property name="start">1</property>
+      <property name="level">00:00:00.000=0;00:00:00.533=1</property>
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">1</property>
+      <property name="shotcut:animIn">17</property>
+    </filter>
+    <filter id="filter5" in="00:00:10.833" out="00:00:17.133">
+      <property name="window">75</property>
+      <property name="max_gain">20dB</property>
+      <property name="level">00:00:00.000=-60;00:00:00.533=0</property>
+      <property name="mlt_service">volume</property>
+      <property name="shotcut:filter">fadeInVolume</property>
+      <property name="shotcut:animIn">17</property>
+    </filter>
+    <filter id="filter6" in="00:00:10.833" out="00:00:17.133">
+      <property name="start">1</property>
+      <property name="level">00:00:05.900=1;00:00:06.300=0</property>
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeOutBrightness</property>
+      <property name="alpha">1</property>
+      <property name="shotcut:animOut">13</property>
+    </filter>
+    <filter id="filter7" in="00:00:10.833" out="00:00:17.133">
+      <property name="window">75</property>
+      <property name="max_gain">20dB</property>
+      <property name="level">00:00:05.900=0;00:00:06.300=-60</property>
+      <property name="mlt_service">volume</property>
+      <property name="shotcut:filter">fadeOutVolume</property>
+      <property name="shotcut:animOut">13</property>
+    </filter>
+  </producer>
+  <producer id="producer5" in="00:00:00.000" out="00:00:22.700">
+    <property name="length">00:00:22.733</property>
+    <property name="eof">pause</property>
+    <property name="resource">/home/zinnia/2021-06-05 13-35-52-Level4-CQP-QP20.mkv</property>
+    <property name="audio_index">1</property>
+    <property name="video_index">0</property>
+    <property name="mute_on_pause">0</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="seekable">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="creation_time">2021-06-05T04:36:15</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+    <property name="shotcut:hash">9d5d232212af39ea1026901df25d1d09</property>
+    <property name="ignore_points">0</property>
+    <property name="shotcut:caption">2021-06-05 13-35-52-Level4-CQP-QP20.mkv</property>
+    <filter id="filter8" in="00:00:10.533" out="00:00:17.300">
+      <property name="start">1</property>
+      <property name="level">00:00:00.000=0;00:00:00.400=1</property>
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">1</property>
+      <property name="shotcut:animIn">13</property>
+    </filter>
+    <filter id="filter9" in="00:00:10.533" out="00:00:17.300">
+      <property name="window">75</property>
+      <property name="max_gain">20dB</property>
+      <property name="level">00:00:00.000=-60;00:00:00.400=0</property>
+      <property name="mlt_service">volume</property>
+      <property name="shotcut:filter">fadeInVolume</property>
+      <property name="shotcut:animIn">13</property>
+    </filter>
+    <filter id="filter10" in="00:00:10.533" out="00:00:17.300">
+      <property name="start">1</property>
+      <property name="level">00:00:06.433=1;00:00:06.767=0</property>
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeOutBrightness</property>
+      <property name="alpha">1</property>
+      <property name="shotcut:animOut">11</property>
+    </filter>
+    <filter id="filter11" in="00:00:10.533" out="00:00:17.300">
+      <property name="window">75</property>
+      <property name="max_gain">20dB</property>
+      <property name="level">00:00:06.433=0;00:00:06.767=-60</property>
+      <property name="mlt_service">volume</property>
+      <property name="shotcut:filter">fadeOutVolume</property>
+      <property name="shotcut:animOut">11</property>
+    </filter>
+  </producer>
+  <playlist id="playlist0">
+    <property name="shotcut:video">1</property>
+    <property name="shotcut:name">V1</property>
+    <entry producer="producer3" in="00:00:08.567" out="00:00:15.733"/>
+    <entry producer="producer4" in="00:00:10.833" out="00:00:17.133"/>
+    <entry producer="producer5" in="00:00:10.533" out="00:00:17.300"/>
+  </playlist>
+  <producer id="producer6" in="00:00:00.000" out="03:59:59.967">
+    <property name="length">04:00:00.000</property>
+    <property name="eof">pause</property>
+    <property name="resource">#00000000</property>
+    <property name="aspect_ratio">1</property>
+    <property name="mlt_service">color</property>
+    <property name="mlt_image_format">rgb24a</property>
+    <property name="shotcut:caption">transparent</property>
+    <property name="shotcut:detail">transparent</property>
+    <property name="ignore_points">0</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+    <property name="seekable">1</property>
+    <filter id="filter12" out="00:00:01.533">
+      <property name="argument">CBR 4Mbps</property>
+      <property name="geometry">0 810 1920 270 1</property>
+      <property name="family">Sans</property>
+      <property name="size">80</property>
+      <property name="weight">750</property>
+      <property name="style">normal</property>
+      <property name="fgcolour">#ffffffff</property>
+      <property name="bgcolour">#00000000</property>
+      <property name="olcolour">#aa000000</property>
+      <property name="pad">0</property>
+      <property name="halign">center</property>
+      <property name="valign">top</property>
+      <property name="outline">3</property>
+      <property name="mlt_service">dynamictext</property>
+      <property name="shotcut:filter">dynamicText</property>
+      <property name="shotcut:usePointSize">1</property>
+      <property name="shotcut:pointSize">60</property>
+    </filter>
+    <filter id="filter13" out="00:00:01.533">
+      <property name="start">1</property>
+      <property name="level">00:00:01.133=1;00:00:01.533=0</property>
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeOutBrightness</property>
+      <property name="alpha">1</property>
+      <property name="shotcut:animOut">13</property>
+    </filter>
+    <filter id="filter14" out="00:00:01.533">
+      <property name="window">75</property>
+      <property name="max_gain">20dB</property>
+      <property name="level">00:00:01.133=0;00:00:01.533=-60</property>
+      <property name="mlt_service">volume</property>
+      <property name="shotcut:filter">fadeOutVolume</property>
+      <property name="shotcut:animOut">13</property>
+    </filter>
+  </producer>
+  <producer id="producer7" in="00:00:00.000" out="03:59:59.967">
+    <property name="length">04:00:00.000</property>
+    <property name="eof">pause</property>
+    <property name="resource">#00000000</property>
+    <property name="aspect_ratio">1</property>
+    <property name="mlt_service">color</property>
+    <property name="mlt_image_format">rgb24a</property>
+    <property name="shotcut:caption">transparent</property>
+    <property name="shotcut:detail">transparent</property>
+    <property name="ignore_points">0</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+    <property name="seekable">1</property>
+    <filter id="filter15" out="00:00:01.533">
+      <property name="argument">CQP 20</property>
+      <property name="geometry">0 810 1920 270 1</property>
+      <property name="family">Sans</property>
+      <property name="size">80</property>
+      <property name="weight">750</property>
+      <property name="style">normal</property>
+      <property name="fgcolour">#ffffffff</property>
+      <property name="bgcolour">#00000000</property>
+      <property name="olcolour">#aa000000</property>
+      <property name="pad">0</property>
+      <property name="halign">center</property>
+      <property name="valign">top</property>
+      <property name="outline">3</property>
+      <property name="mlt_service">dynamictext</property>
+      <property name="shotcut:filter">dynamicText</property>
+      <property name="shotcut:usePointSize">1</property>
+      <property name="shotcut:pointSize">60</property>
+    </filter>
+    <filter id="filter16" out="00:00:01.533">
+      <property name="start">1</property>
+      <property name="level">00:00:01.133=1;00:00:01.533=0</property>
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeOutBrightness</property>
+      <property name="alpha">1</property>
+      <property name="shotcut:animOut">13</property>
+    </filter>
+    <filter id="filter17" out="00:00:01.533">
+      <property name="window">75</property>
+      <property name="max_gain">20dB</property>
+      <property name="level">00:00:01.133=0;00:00:01.533=-60</property>
+      <property name="mlt_service">volume</property>
+      <property name="shotcut:filter">fadeOutVolume</property>
+      <property name="shotcut:animOut">13</property>
+    </filter>
+  </producer>
+  <producer id="producer8" in="00:00:00.000" out="03:59:59.967">
+    <property name="length">04:00:00.000</property>
+    <property name="eof">pause</property>
+    <property name="resource">#00000000</property>
+    <property name="aspect_ratio">1</property>
+    <property name="mlt_service">color</property>
+    <property name="mlt_image_format">rgb24a</property>
+    <property name="shotcut:caption">transparent</property>
+    <property name="shotcut:detail">transparent</property>
+    <property name="ignore_points">0</property>
+    <property name="global_feed">1</property>
+    <property name="xml">was here</property>
+    <property name="seekable">1</property>
+    <filter id="filter18" out="00:00:01.533">
+      <property name="argument">CQP 14</property>
+      <property name="geometry">0 810 1920 270 1</property>
+      <property name="family">Sans</property>
+      <property name="size">80</property>
+      <property name="weight">750</property>
+      <property name="style">normal</property>
+      <property name="fgcolour">#ffffffff</property>
+      <property name="bgcolour">#00000000</property>
+      <property name="olcolour">#aa000000</property>
+      <property name="pad">0</property>
+      <property name="halign">center</property>
+      <property name="valign">top</property>
+      <property name="outline">3</property>
+      <property name="mlt_service">dynamictext</property>
+      <property name="shotcut:filter">dynamicText</property>
+      <property name="shotcut:usePointSize">1</property>
+      <property name="shotcut:pointSize">60</property>
+    </filter>
+    <filter id="filter19" out="00:00:01.533">
+      <property name="start">1</property>
+      <property name="level">00:00:01.133=1;00:00:01.533=0</property>
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeOutBrightness</property>
+      <property name="alpha">1</property>
+      <property name="shotcut:animOut">13</property>
+    </filter>
+    <filter id="filter20" out="00:00:01.533">
+      <property name="window">75</property>
+      <property name="max_gain">20dB</property>
+      <property name="level">00:00:01.133=0;00:00:01.533=-60</property>
+      <property name="mlt_service">volume</property>
+      <property name="shotcut:filter">fadeOutVolume</property>
+      <property name="shotcut:animOut">13</property>
+    </filter>
+  </producer>
+  <playlist id="playlist1">
+    <property name="shotcut:video">1</property>
+    <property name="shotcut:name">V2</property>
+    <entry producer="producer6" in="00:00:00.000" out="00:00:01.533"/>
+    <blank length="00:00:05.633"/>
+    <entry producer="producer7" in="00:00:00.000" out="00:00:01.533"/>
+    <blank length="00:00:04.767"/>
+    <entry producer="producer8" in="00:00:00.000" out="00:00:01.533"/>
+  </playlist>
+  <tractor id="tractor0" title="Shotcut version 21.01.31" global_feed="1" in="00:00:00.000" out="00:00:20.300">
+    <property name="shotcut">1</property>
+    <property name="shotcut:projectAudioChannels">2</property>
+    <property name="shotcut:projectFolder">0</property>
+    <track producer="background"/>
+    <track producer="playlist0"/>
+    <track producer="playlist1"/>
+    <transition id="transition0">
+      <property name="a_track">0</property>
+      <property name="b_track">1</property>
+      <property name="mlt_service">mix</property>
+      <property name="always_active">1</property>
+      <property name="sum">1</property>
+    </transition>
+    <transition id="transition1">
+      <property name="a_track">0</property>
+      <property name="b_track">1</property>
+      <property name="version">0.9</property>
+      <property name="mlt_service">frei0r.cairoblend</property>
+      <property name="threads">0</property>
+      <property name="disable">1</property>
+    </transition>
+    <transition id="transition2">
+      <property name="a_track">0</property>
+      <property name="b_track">2</property>
+      <property name="mlt_service">mix</property>
+      <property name="always_active">1</property>
+      <property name="sum">1</property>
+    </transition>
+    <transition id="transition3">
+      <property name="a_track">1</property>
+      <property name="b_track">2</property>
+      <property name="version">0.9</property>
+      <property name="mlt_service">frei0r.cairoblend</property>
+      <property name="threads">0</property>
+      <property name="disable">0</property>
+    </transition>
+  </tractor>
+</mlt>
