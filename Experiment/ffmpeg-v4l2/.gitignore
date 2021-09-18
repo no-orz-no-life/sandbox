@@ -1,0 +1,3 @@
+*.o
+testv4l2
+.vscode
