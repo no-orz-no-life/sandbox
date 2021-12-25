@@ -162,7 +162,7 @@ let processPath fileOrDirectory =
             | ".mp4" -> processFfmpeg path |> Some
             | ".orf" -> processDcraw path |> Some
             | ".mov" -> processFfmpeg path |> Some
-            | ".3gp" -> None
+            | ".3gp" -> processFfmpeg path |> Some
             | ".txt" -> None
             | ext -> (sprintf "%A shiranai" ext) |> failwith
             |> Option.map (fun ts -> (path, getTimestamp ts))
