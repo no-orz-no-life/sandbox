@@ -1,0 +1,18 @@
+
+Filename: PC120166.ORF
+Timestamp: Sun Dec 12 16:48:05 2021
+Camera: Olympus E-PM2
+ISO speed: 3200
+Shutter: 1/60.0 sec
+Aperture: f/0.0
+Focal length: 0.0 mm
+Embedded ICC profile: no
+Number of raw images: 1
+Thumb size:  3200 x 2400
+Full size:   4640 x 3472
+Image size:  4640 x 3472
+Output size: 4640 x 3472
+Raw colors: 3
+Filter pattern: RG/GB
+Daylight multipliers: 2.155587 0.934705 1.481107
+Camera multipliers: 2.000000 1.000000 1.703125 0.000000

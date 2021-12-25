@@ -1,0 +1,52 @@
+Image Description	OLYMPUS DIGITAL CAMERA         
+Manufacturer	OLYMPUS IMAGING CORP.  
+Model	E-PM2           
+Orientation	Top-left
+X-Resolution	350
+Y-Resolution	350
+Resolution Unit	Inch
+Software	Version 1.1                    
+Date and Time	2021:12:12 16:48:05
+Artist	
+YCbCr Positioning	Co-sited
+Copyright	[None] (Photographer) - [None] (Editor)
+PRINT Image Matching	528 bytes undefined data
+Compression	JPEG compression
+X-Resolution	72
+Y-Resolution	72
+Resolution Unit	Inch
+Exposure Time	1/60 sec.
+F-Number	f/0.0
+Exposure Program	Shutter priority
+ISO Speed Ratings	3200
+Exif Version	Exif Version 2.3
+Date and Time (Original)	2021:12:12 16:48:05
+Date and Time (Digitized)	2021:12:12 16:48:05
+Components Configuration	Y Cb Cr -
+Exposure Bias	0.00 EV
+Maximum Aperture Value	0.00 EV (f/1.0)
+Metering Mode	Pattern
+Light Source	Unknown
+Flash	Flash did not fire
+Focal Length	0.0 mm
+Maker Note	11352 bytes undefined data
+User Comment	                                                                                                                     
+FlashPixVersion	FlashPix Version 1.0
+Color Space	sRGB
+Pixel X Dimension	4608
+Pixel Y Dimension	3456
+File Source	DSC
+Custom Rendered	Normal process
+Exposure Mode	Auto exposure
+White Balance	Auto white balance
+Digital Zoom Ratio	1.00
+Scene Capture Type	Standard
+Gain Control	High gain up
+Contrast	Normal
+Saturation	Normal
+Sharpness	Normal
+Lens Specification	0/0, 0/0, 0/0, 0/0
+Lens Model	
+Interoperability Index	R98
+Interoperability Version	0100
+ThumbnailSize	6318

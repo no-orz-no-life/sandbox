@@ -1,0 +1,33 @@
+Camera-Specific Properties:
+
+Equipment Make: OLYMPUS IMAGING CORP.
+Camera Model: E-PM2
+Camera Software: Version 1.1
+Maximum Lens Aperture: f/1.0
+
+Image-Specific Properties:
+
+Image Orientation: Top, Left-Hand
+Horizontal Resolution: 350 dpi
+Vertical Resolution: 350 dpi
+Image Created: 2021:12:12 16:48:05
+Exposure Time: 1/60 sec
+F-Number: f/0.0
+Exposure Program: Shutter Priority
+ISO Speed Rating: 3200
+Exposure Bias: 0 EV
+Metering Mode: Pattern
+Light Source: Unknown
+Flash: No Flash, Compulsory
+Focal Length: 0.00 mm
+Color Space Information: sRGB
+Image Width: 4608
+Image Height: 3456
+Rendering: Normal
+Exposure Mode: Auto
+White Balance: Auto
+Scene Capture Type: Standard
+Gain Control: High Gain Up
+Contrast: Normal
+Saturation: Normal
+Sharpness: Normal
