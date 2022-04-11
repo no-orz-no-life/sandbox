@@ -1,0 +1,13 @@
+Camera-Specific Properties:
+
+Camera Model: X06HT
+
+Image-Specific Properties:
+
+Horizontal Resolution: 72 dpi
+Vertical Resolution: 72 dpi
+ISO Speed Rating: 86
+Focal Length: 4.31 mm
+Color Space Information: sRGB
+Image Width: 2592
+Image Height: 1552

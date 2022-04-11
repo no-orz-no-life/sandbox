@@ -53,8 +53,9 @@ let parseExiftags sr =
         let newV = 
             match k with
             | "Image Created" ->
-                DateTime.ParseExact(v, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture)
-                |> Timestamp
+                match DateTime.TryParseExact(v, "yyyy:MM:dd HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None) with
+                | true, d -> Timestamp d
+                | _ -> Text v
             | k -> Text v
         (k, newV)
     parse (Regex re) mapKV sr
@@ -82,12 +83,12 @@ let parseDcraw sr =
                         sprintf "%s0%s" (v.Substring(0, 8)) (v.Substring(9))
                     else
                         v
-                DateTime.ParseExact(normalized, "ddd MMM dd HH:mm:ss yyyy", CultureInfo.InvariantCulture)
-                |> Timestamp
+                match DateTime.TryParseExact(normalized, "ddd MMM dd HH:mm:ss yyyy", CultureInfo.InvariantCulture,  DateTimeStyles.None) with
+                | true, d -> Timestamp d
+                | _ -> Text v
             | k -> Text v
         (k, newV)
     parse (Regex re) mapKV sr
-
 
 let testExiftags () = 
     use fs = new FileStream("test/out.exiftags.txt", FileMode.Open, FileAccess.Read)
@@ -160,23 +161,57 @@ let processPath fileOrDirectory =
             match (extension.ToLower()) with
             | ".jpg" -> processExiftags path |> Some
             | ".mp4" -> processFfmpeg path |> Some
+            | ".lrv" -> processFfmpeg path |> Some
+            | ".avi" -> processFfmpeg path |> Some
             | ".orf" -> processDcraw path |> Some
+            | ".arw" -> processDcraw path |> Some
             | ".mov" -> processFfmpeg path |> Some
             | ".3gp" -> processFfmpeg path |> Some
             | ".txt" -> None
             | ext -> (sprintf "%A shiranai" ext) |> failwith
             |> Option.map (fun ts -> (path, getTimestamp ts))
         with
-        | :? FormatException as ex -> printfn "%A: %A" path (ex.Message); None
+        | ex -> printfn "# ERROR: %A: %A" path (ex.Message.Replace("\n", "/")); None
     )
     |> Seq.filter Option.isSome
     |> Seq.map Option.get
     
 [<EntryPoint>]
 let main args =
-    for arg in args do
-        for (path, ts) in processPath arg do
-            let baseName = Path.GetFileNameWithoutExtension(path)
+    let usage () = 
+        printfn "usage: %s [src...] [dst]" "dotnet run"
+        Environment.Exit(1)
+
+    let parseArg args = seq {
+        if Array.length args < 2 then
+            usage ()
+        let len = Array.length args
+        let srcs, dsts = Array.splitAt (len - 1) args
+        let dst = Array.exactlyOne dsts
+        for src in srcs do
+            yield (dst, src)
+    }
+
+    parseArg args
+    |> Seq.fold (fun m (dst, src) ->
+        processPath src
+        |> Seq.fold (fun m (path, ts) ->
+            let baseName = Path.GetFileName(path)
             let dirName = Path.GetDirectoryName(path)
-            printfn "%s => %A" path ts
+
+            let dstBase = Path.Combine(dst, sprintf "%04d/%02d/%04d-%02d-%02d" (ts.Year) (ts.Month) (ts.Year) (ts.Month) (ts.Day))
+
+            let newM = 
+                if Set.contains dstBase m then
+                    m
+                else
+                    printfn "mkdir -p %s" dstBase
+                    Set.add dstBase m
+            let dstName = Path.Combine(dstBase, sprintf "%04d%02d%02d-%02d%02d%02d-%s" (ts.Year) (ts.Month) (ts.Day) (ts.Hour) (ts.Minute) (ts.Second) baseName)
+
+            printfn "mv -n %s %s" path dstName
+            newM
+        ) m
+    ) Set.empty<string>
+    |> ignore
     0
